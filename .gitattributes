@@ -1,0 +1,25 @@
+# Garante que scripts shell sempre usem LF (Unix line endings)
+*.sh text eol=lf
+
+# Python files
+*.py text eol=lf
+
+# Markdown files
+*.md text eol=auto
+
+# Configuration files
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+
+# Environment files
+.env* text eol=lf
+
+# Binary files
+*.pyc binary
+*.pyo binary
+*.so binary
+*.dylib binary
+*.dll binary
+*.exe binary
