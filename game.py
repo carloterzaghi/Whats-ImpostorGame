@@ -1,15 +1,15 @@
 """
-game.py — Lógica do Jogo do Impostor
-Responsável por sortear papéis e palavras para cada jogador.
+game.py — Lógica do Jogo do Infiltrado
+Responsável por sortear papéis, perguntas e coletar respostas.
 """
 
 import random
 from typing import Optional
 from config import (
-    CATEGORIAS_PALAVRAS,
+    CATEGORIAS_PERGUNTAS,
     MSG_JOGADOR_NORMAL,
-    MSG_IMPOSTOR,
-    MSG_IMPOSTOR_SEM_PALAVRA,
+    MSG_INFILTRADO,
+    MSG_RESULTADO,
 )
 
 
@@ -19,25 +19,26 @@ class Jogador:
     def __init__(self, nome: str, telefone: str):
         self.nome = nome
         self.telefone = telefone        # formato: +5511999999999
-        self.impostor: bool = False
-        self.palavra: Optional[str] = None
+        self.infiltrado: bool = False
+        self.pergunta: Optional[str] = None
+        self.instrucao: Optional[str] = None
+        self.resposta: Optional[str] = None
         self.mensagem: str = ""
 
     def __repr__(self) -> str:
-        papel = "IMPOSTOR" if self.impostor else "Cidadão"
-        return f"Jogador({self.nome}, {self.telefone}, {papel}, palavra={self.palavra})"
+        papel = "INFILTRADO" if self.infiltrado else "Normal"
+        return f"Jogador({self.nome}, {self.telefone}, {papel})"
 
 
-class JogoImpostor:
-    """Gerencia uma partida do Jogo do Impostor."""
+class JogoInfiltrado:
+    """Gerencia uma partida do Jogo do Infiltrado."""
 
     def __init__(self):
         self.jogadores: list[Jogador] = []
         self.categoria: Optional[str] = None
-        self.palavra_normal: Optional[str] = None
-        self.palavra_impostor: Optional[str] = None
-        self.num_impostores: int = 1
-        self.impostor_recebe_palavra: bool = True
+        self.pergunta_normal: Optional[str] = None
+        self.instrucao_infiltrado: Optional[str] = None
+        self.infiltrado_obj: Optional[Jogador] = None
 
     # ---- Gerenciar jogadores ------------------------------------------------
 
@@ -60,31 +61,20 @@ class JogoImpostor:
     # ---- Configurar partida -------------------------------------------------
 
     def listar_categorias(self) -> list[str]:
-        return list(CATEGORIAS_PALAVRAS.keys())
+        return list(CATEGORIAS_PERGUNTAS.keys())
 
     def escolher_categoria(self, nome_categoria: str) -> bool:
-        """Define a categoria de palavras para a partida."""
-        if nome_categoria in CATEGORIAS_PALAVRAS:
+        """Define a categoria de perguntas para a partida."""
+        if nome_categoria in CATEGORIAS_PERGUNTAS:
             self.categoria = nome_categoria
             return True
         return False
-
-    def definir_num_impostores(self, n: int) -> bool:
-        """Define quantos impostores haverá (mín. 1, máx jogadores-1)."""
-        if 1 <= n < len(self.jogadores):
-            self.num_impostores = n
-            return True
-        return False
-
-    def definir_impostor_com_palavra(self, recebe: bool):
-        """Define se o impostor recebe uma palavra similar ou nenhuma."""
-        self.impostor_recebe_palavra = recebe
 
     # ---- Sortear e preparar -------------------------------------------------
 
     def sortear(self, modo_teste: bool = False) -> bool:
         """
-        Sorteia impostores e palavras.
+        Sorteia infiltrado e pergunta.
         Args:
             modo_teste: Se True, permite enviar com menos de 3 jogadores
         Retorna True se tudo deu certo, False se faltam dados.
@@ -96,43 +86,66 @@ class JogoImpostor:
         if not self.categoria:
             print("❌ Escolha uma categoria primeiro!")
             return False
-        if len(self.jogadores) > 1 and self.num_impostores >= len(self.jogadores):
-            print("❌ Número de impostores deve ser menor que o total de jogadores!")
-            return False
 
-        # Sortear par de palavras da categoria
-        pares = CATEGORIAS_PALAVRAS[self.categoria]
-        palavra_normal, palavra_impostor = random.choice(pares)
-        self.palavra_normal = palavra_normal
-        self.palavra_impostor = palavra_impostor
+        # Sortear pergunta da categoria
+        perguntas = CATEGORIAS_PERGUNTAS[self.categoria]
+        pergunta_normal, instrucao_infiltrado = random.choice(perguntas)
+        self.pergunta_normal = pergunta_normal
+        self.instrucao_infiltrado = instrucao_infiltrado
 
         # Resetar jogadores
         for j in self.jogadores:
-            j.impostor = False
-            j.palavra = None
+            j.infiltrado = False
+            j.pergunta = None  
+            j.instrucao = None
+            j.resposta = None
             j.mensagem = ""
 
-        # Sortear impostores (ajustar quantidade se necessário)
-        num_impostores_real = min(self.num_impostores, len(self.jogadores) - 1)
-        if num_impostores_real > 0:
-            impostores = random.sample(self.jogadores, num_impostores_real)
-            for imp in impostores:
-                imp.impostor = True
+        # Sortear infiltrado (apenas 1)
+        self.infiltrado_obj = random.choice(self.jogadores)
+        self.infiltrado_obj.infiltrado = True
 
-        # Atribuir palavras e mensagens
+        # Atribuir perguntas e mensagens
         for j in self.jogadores:
-            if j.impostor:
-                if self.impostor_recebe_palavra:
-                    j.palavra = palavra_impostor
-                    j.mensagem = MSG_IMPOSTOR.format(palavra=palavra_impostor)
-                else:
-                    j.palavra = None
-                    j.mensagem = MSG_IMPOSTOR_SEM_PALAVRA
+            if j.infiltrado:
+                j.instrucao = instrucao_infiltrado
+                j.mensagem = MSG_INFILTRADO.format(instrucao=instrucao_infiltrado)
             else:
-                j.palavra = palavra_normal
-                j.mensagem = MSG_JOGADOR_NORMAL.format(palavra=palavra_normal)
+                j.pergunta = pergunta_normal
+                j.mensagem = MSG_JOGADOR_NORMAL.format(pergunta=pergunta_normal)
 
         return True
+
+    def coletar_respostas(self) -> bool:
+        """
+        Coleta as respostas de todos os jogadores via input.
+        Em produção, isso viria por webhook do WhatsApp.
+        """
+        print("\n📝 COLETANDO RESPOSTAS")
+        print("=" * 50)
+        print("Digite a resposta de cada jogador:\n")
+        
+        for j in self.jogadores:
+            resposta = input(f"{j.nome}: ").strip()
+            j.resposta = resposta if resposta else "(sem resposta)"
+        
+        print("\n✅ Todas as respostas coletadas!")
+        return True
+
+    def gerar_resultado(self) -> str:
+        """Gera a mensagem de resultado final para enviar a todos."""
+        respostas_texto = ""
+        for j in self.jogadores:
+            emoji = "🔴" if j.infiltrado else "👤"
+            respostas_texto += f"{emoji} *{j.nome}:* {j.resposta}\n"
+        
+        resultado = MSG_RESULTADO.format(
+            respostas=respostas_texto,
+            pergunta=self.pergunta_normal,
+            instrucao=self.instrucao_infiltrado,
+            infiltrado=self.infiltrado_obj.nome if self.infiltrado_obj else "???"
+        )
+        return resultado
 
     def resumo_partida(self) -> str:
         """Retorna um resumo da partida (para o organizador)."""
@@ -141,15 +154,15 @@ class JogoImpostor:
             "📋  RESUMO DA PARTIDA (só o organizador vê isso!)",
             "=" * 50,
             f"Categoria: {self.categoria}",
-            f"Palavra dos cidadãos: {self.palavra_normal}",
-            f"Palavra do impostor: {self.palavra_impostor or '(nenhuma)'}",
+            f"Pergunta normal: {self.pergunta_normal}",
+            f"Instrução infiltrado: {self.instrucao_infiltrado}",
             f"Total de jogadores: {len(self.jogadores)}",
-            f"Impostores: {self.num_impostores}",
+            f"Infiltrado: {self.infiltrado_obj.nome if self.infiltrado_obj else '???'}",
             "",
         ]
         for i, j in enumerate(self.jogadores, 1):
-            papel = "🔴 IMPOSTOR" if j.impostor else "✅ Cidadão"
-            linhas.append(f"  {i}. {j.nome} ({j.telefone}) — {papel} — Palavra: {j.palavra or '???'}")
+            papel = "🔴 INFILTRADO" if j.infiltrado else "👤 Normal"
+            linhas.append(f"  {i}. {j.nome} ({j.telefone}) — {papel}")
         linhas.append("=" * 50)
         return "\n".join(linhas)
 
@@ -168,3 +181,7 @@ class JogoImpostor:
             else:
                 telefone = "+55" + telefone
         return telefone
+
+
+# Alias para compatibilidade
+JogoImpostor = JogoInfiltrado

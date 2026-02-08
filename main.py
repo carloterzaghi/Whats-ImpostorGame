@@ -38,11 +38,11 @@ def limpar_tela():
 def banner():
     print("""
 ╔═══════════════════════════════════════════════╗
-║         🎮  JOGO DO IMPOSTOR  🎮              ║
+║       🎮  JOGO DO INFILTRADO  🎮              ║
 ║           via WhatsApp Bot                    ║
 ╠═══════════════════════════════════════════════╣
-║  Adicione jogadores, escolha uma categoria,  ║
-║  sorteie os papéis e envie as mensagens!      ║
+║  Um jogador recebe instrução diferente!      ║
+║  Todos enviam respostas. Descubra quem é!     ║
 ╚═══════════════════════════════════════════════╝
 """)
 
@@ -55,10 +55,10 @@ def menu_principal():
     print("  1. Adicionar jogador")
     print("  2. Remover jogador")
     print("  3. Ver jogadores cadastrados")
-    print("  4. Escolher categoria de palavras")
-    print("  5. Configurar impostor")
-    print("  6. Sortear e enviar mensagens! (min. 3 jogadores)")
-    print("  7. Teste: enviar para cadastrados (sem mínimo)")
+    print("  4. Escolher categoria de perguntas")
+    print("  5. 🎲 INICIAR JOGO (min. 3 jogadores)")
+    print("  6. Coletar respostas e mostrar resultado")
+    print("  7. Teste: modo prévia (sem envio)")
     print("  8. Escolher método de envio")
     print("  0. Sair")
     print("-" * 50)
@@ -132,7 +132,7 @@ def ver_jogadores(jogo: JogoImpostor):
 
 
 def escolher_categoria(jogo: JogoImpostor):
-    """Menu para escolher a categoria de palavras."""
+    """Menu para escolher a categoria de perguntas."""
     categorias = jogo.listar_categorias()
     print("\n📂 CATEGORIAS DISPONÍVEIS")
     print("-" * 30)
@@ -152,42 +152,15 @@ def escolher_categoria(jogo: JogoImpostor):
         print("  ❌ Digite um número válido.")
 
 
-def configurar_impostor(jogo: JogoImpostor):
-    """Configura número de impostores e se recebem palavra."""
-    print("\n⚙️  CONFIGURAR IMPOSTOR")
-    print(f"  Jogadores cadastrados: {len(jogo.jogadores)}")
-
-    if len(jogo.jogadores) < 3:
-        print("  ⚠️  Adicione pelo menos 3 jogadores para o jogo.")
-        return
-
-    # Número de impostores
-    try:
-        n = int(input(f"  Quantos impostores? (1 a {len(jogo.jogadores) - 1}): ").strip())
-        if jogo.definir_num_impostores(n):
-            print(f"  ✅ {n} impostor(es) definido(s).")
-        else:
-            print(f"  ❌ Número inválido. Deve ser entre 1 e {len(jogo.jogadores) - 1}.")
-            return
-    except ValueError:
-        print("  ❌ Digite um número válido.")
-        return
-
-    # Impostor recebe palavra?
-    resp = input("  O impostor recebe uma palavra parecida? (s/n) [s]: ").strip().lower()
-    if resp == "n":
-        jogo.definir_impostor_com_palavra(False)
-        print("  ✅ O impostor NÃO receberá palavra (modo difícil).")
-    else:
-        jogo.definir_impostor_com_palavra(True)
-        print("  ✅ O impostor receberá uma palavra similar.")
-
-
-def sortear_e_enviar(jogo: JogoImpostor):
-    """Sorteia papéis e envia mensagens pelo WhatsApp."""
+def iniciar_jogo(jogo: JogoImpostor):
+    """Sorteia e envia perguntas para os jogadores."""
     import api_config
     
-    print("\n🎲 SORTEAR E ENVIAR")
+    if len(jogo.jogadores) < 3:
+        print("\n⚠️  É necessário pelo menos 3 jogadores!")
+        return
+
+    print("\n🎲 INICIAR JOGO")
     print("-" * 35)
 
     with GerenciadorMemoria("Sorteio e envio"):
@@ -196,6 +169,68 @@ def sortear_e_enviar(jogo: JogoImpostor):
 
         # Mostrar resumo para o organizador
         print(jogo.resumo_partida())
+
+        # Confirmação
+        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+        if api_config.METODO_ENVIO == "pywhatkit":
+            print("   O WhatsApp Web será aberto no navegador.")
+            print("   Certifique-se de que você está logado em web.whatsapp.com")
+        elif api_config.METODO_ENVIO == "twilio":
+            print("   As perguntas serão enviadas via Twilio API.")
+        
+        conf = input("\n   Deseja enviar as perguntas agora? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
+
+        print("\n🚀 Iniciando envio de perguntas...\n")
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
+        
+        print("\n✅ Perguntas enviadas!")
+        print("📝 Quando todos responderem, use a opção 6 para coletar respostas.")
+
+
+def coletar_respostas_e_resultado(jogo: JogoImpostor):
+    """Coleta respostas dos jogadores e mostra o resultado."""
+    import api_config
+    
+    if not jogo.infiltrado_obj:
+        print("\n⚠️  Inicie o jogo primeiro (opção 5)!")
+        return
+
+    print("\n📝 COLETAR RESPOSTAS E RESULTADO")
+    print("-" * 50)
+    
+    with GerenciadorMemoria("Coleta de respostas"):
+        # Coletar respostas
+        jogo.coletar_respostas()
+        
+        # Gerar resultado
+        resultado_msg = jogo.gerar_resultado()
+        
+        print("\n" + "=" * 50)
+        print("RESULTADO QUE SERÁ ENVIADO PARA TODOS:")
+        print("=" * 50)
+        print(resultado_msg)
+        print("=" * 50)
+        
+        # Confirmar envio do resultado
+        conf = input("\nDeseja enviar o resultado para todos? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
+        
+        print("\n🚀 Enviando resultado para todos...\n")
+        
+        # Enviar resultado para todos os jogadores
+        for j in jogo.jogadores:
+            j.mensagem = resultado_msg
+        
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
+        
+        print("\n🎉 Jogo finalizado!")
 
         # Confirmação
         print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
@@ -321,9 +356,9 @@ def main():
         elif opcao == "4":
             escolher_categoria(jogo)
         elif opcao == "5":
-            configurar_impostor(jogo)
+            iniciar_jogo(jogo)
         elif opcao == "6":
-            sortear_e_enviar(jogo)
+            coletar_respostas_e_resultado(jogo)
         elif opcao == "7":
             modo_teste(jogo)
         elif opcao == "8":
