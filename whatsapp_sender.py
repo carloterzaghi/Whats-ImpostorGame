@@ -61,7 +61,8 @@ def enviar_via_pywhatkit(telefone: str, mensagem: str, espera: int = INTERVALO_E
 
 def enviar_via_twilio(telefone: str, mensagem: str) -> bool:
     """Envia mensagem via Twilio API."""
-    try:client = _get_twilio_client()
+    try:
+        client = _get_twilio_client()
 
         # Formatar telefone para Twilio (whatsapp:+5511999999999)
         if not telefone.startswith("whatsapp:"):
@@ -69,7 +70,6 @@ def enviar_via_twilio(telefone: str, mensagem: str) -> bool:
         else:
             telefone_twilio = telefone
 
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         message = client.messages.create(
             from_=TWILIO_FROM_NUMBER,
             body=mensagem,
