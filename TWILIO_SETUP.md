@@ -57,7 +57,7 @@ No Twilio Console (https://console.twilio.com/):
 ```bash
 TWILIO_ACCOUNT_SID = "seu_account_sid_aqui"    # Cole seu Account SID
 TWILIO_AUTH_TOKEN = "seu_auth_token_aqui"      # Cole seu Auth Token
-TWILIO_FROM_NUMBER = "whatsapp:+14155238886"   # whatsapp: + número Twilio
+TWILIO_FROM_NUMBER = "whatsapp:+exemplo"   # whatsapp: + número Twilio
 METODO_ENVIO = "twilio"                        # Usar Twilio
 ```
 
