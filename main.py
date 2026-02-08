@@ -277,9 +277,9 @@ def modo_teste(jogo: JogoImpostor):
     """Teste de envio para os números dos jogadores salvos."""
     import api_config
     
-    if len(jogo.jogadores) < 3:
-        print("\n⚠️  É necessário pelo menos 3 jogadores!")
-        return
+    # if len(jogo.jogadores) < 3:
+    #     print("\n⚠️  É necessário pelo menos 3 jogadores!")
+    #     return
     
     print("\n🧪 MODO TESTE - ENVIO REAL")
     print("-" * 35)
