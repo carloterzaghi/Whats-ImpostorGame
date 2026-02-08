@@ -5,10 +5,27 @@ Execute este script para iniciar o jogo.
 Pré-requisitos:
   1. pip install -r requirements.txt
   2. Estar logado no WhatsApp Web (https://web.whatsapp.com) no navegador padrão
+
+Otimizado para Raspberry Pi Zero 2 W
 """
 
 import os
 import sys
+
+# Otimizações para Raspberry Pi (se disponível)
+try:
+    from pi_optimizations import configurar_ambiente_pi, limpar_memoria, GerenciadorMemoria
+    RASPBERRY_PI_MODE = True
+    configurar_ambiente_pi()
+except ImportError:
+    RASPBERRY_PI_MODE = False
+    # Funções dummy para compatibilidade
+    def limpar_memoria(): pass
+    class GerenciadorMemoria:
+        def __init__(self, *args, **kwargs): pass
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+
 from game import JogoImpostor
 from whatsapp_sender import enviar_para_jogadores, exibir_resultado_envio
 from api_config import METODO_ENVIO
@@ -74,6 +91,10 @@ def adicionar_jogador(jogo: JogoImpostor):
         print(f"  ✅ {jogador.nome} ({jogador.telefone}) adicionado!\n")
 
     print(f"\n📊 Total de jogadores: {len(jogo.jogadores)}")
+    
+    # Limpar memória no Pi
+    if RASPBERRY_PI_MODE:
+        limpar_memoria()
 
 
 def remover_jogador(jogo: JogoImpostor):
@@ -169,28 +190,29 @@ def sortear_e_enviar(jogo: JogoImpostor):
     print("\n🎲 SORTEAR E ENVIAR")
     print("-" * 35)
 
-    if not jogo.sortear():
-        return
+    with GerenciadorMemoria("Sorteio e envio"):
+        if not jogo.sortear():
+            return
 
-    # Mostrar resumo para o organizador
-    print(jogo.resumo_partida())
+        # Mostrar resumo para o organizador
+        print(jogo.resumo_partida())
 
-    # Confirmação
-    print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
-    if api_config.METODO_ENVIO == "pywhatkit":
-        print("   O WhatsApp Web será aberto no navegador.")
-        print("   Certifique-se de que você está logado em web.whatsapp.com")
-    elif api_config.METODO_ENVIO == "twilio":
-        print("   As mensagens serão enviadas via Twilio API.")
-    
-    conf = input("\n   Deseja enviar as mensagens agora? (s/n): ").strip().lower()
-    if conf != "s":
-        print("   ❎ Envio cancelado.")
-        return
+        # Confirmação
+        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+        if api_config.METODO_ENVIO == "pywhatkit":
+            print("   O WhatsApp Web será aberto no navegador.")
+            print("   Certifique-se de que você está logado em web.whatsapp.com")
+        elif api_config.METODO_ENVIO == "twilio":
+            print("   As mensagens serão enviadas via Twilio API.")
+        
+        conf = input("\n   Deseja enviar as mensagens agora? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
 
-    print("\n🚀 Iniciando envio de mensagens...\n")
-    resultado = enviar_para_jogadores(jogo.jogadores)
-    exibir_resultado_envio(resultado)
+        print("\n🚀 Iniciando envio de mensagens...\n")
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
 
 
 def modo_teste(jogo: JogoImpostor):
@@ -274,6 +296,16 @@ def escolher_metodo_envio():
 def main():
     limpar_tela()
     banner()
+    
+    # Mostrar info do Raspberry Pi se aplicável
+    if RASPBERRY_PI_MODE:
+        print("🍓 Modo Raspberry Pi ativado (otimizações aplicadas)\n")
+        try:
+            from pi_optimizations import monitorar_recursos
+            monitorar_recursos()
+            print()
+        except:
+            pass
 
     jogo = JogoImpostor()
 
@@ -298,10 +330,27 @@ def main():
             escolher_metodo_envio()
         elif opcao == "0":
             print("\n👋 Até a próxima! Bom jogo!\n")
+            if RASPBERRY_PI_MODE:
+                limpar_memoria()
             sys.exit(0)
         else:
             print("\n⚠️  Opção inválida. Tente novamente.")
+        
+        # Liberar memória após cada operação no Pi
+        if RASPBERRY_PI_MODE:
+            limpar_memoria()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n👋 Programa interrompido. Até logo!\n")
+        if RASPBERRY_PI_MODE:
+            limpar_memoria()
+        sys.exit(0)
+    except Exception as e:
+        print(f"\n❌ Erro inesperado: {e}")
+        if RASPBERRY_PI_MODE:
+            limpar_memoria()
+        sys.exit(1)

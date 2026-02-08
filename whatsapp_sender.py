@@ -3,10 +3,11 @@ whatsapp_sender.py — Módulo de envio de mensagens via WhatsApp
 Suporta dois métodos:
   1. pywhatkit → WhatsApp Web (usa número logado no navegador)
   2. Twilio API → Envia de outro número (requer configuração)
+
+Otimizado para Raspberry Pi com lazy loading de importações
 """
 
 import time
-import pywhatkit as kit
 from config import INTERVALO_ENTRE_MSGS, TEMPO_FECHAR_ABA
 from api_config import (
     METODO_ENVIO,
@@ -16,10 +17,33 @@ from api_config import (
     validar_config_twilio,
 )
 
+# Lazy loading - importar apenas quando necessário
+_pywhatkit = None
+_twilio_client = None
+
+
+def _get_pywhatkit():
+    """Lazy import do pywhatkit."""
+    global _pywhatkit
+    if _pywhatkit is None:
+        import pywhatkit as kit
+        _pywhatkit = kit
+    return _pywhatkit
+
+
+def _get_twilio_client():
+    """Lazy import e criação do cliente Twilio."""
+    global _twilio_client
+    if _twilio_client is None:
+        from twilio.rest import Client
+        _twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    return _twilio_client
+
 
 def enviar_via_pywhatkit(telefone: str, mensagem: str, espera: int = INTERVALO_ENTRE_MSGS) -> bool:
     """Envia mensagem via WhatsApp Web (pywhatkit)."""
     try:
+        kit = _get_pywhatkit()
         print(f"📤 Enviando para {telefone} via WhatsApp Web...")
         kit.sendwhatmsg_instantly(
             phone_no=telefone,
@@ -37,8 +61,7 @@ def enviar_via_pywhatkit(telefone: str, mensagem: str, espera: int = INTERVALO_E
 
 def enviar_via_twilio(telefone: str, mensagem: str) -> bool:
     """Envia mensagem via Twilio API."""
-    try:
-        from twilio.rest import Client
+    try:client = _get_twilio_client()
 
         # Formatar telefone para Twilio (whatsapp:+5511999999999)
         if not telefone.startswith("whatsapp:"):

@@ -101,19 +101,58 @@ O bot aceita vários formatos:
 - `5511999999999` (com código do país)
 - `+5511999999999` (formato completo)
 
+## 🍓 Raspberry Pi Zero 2 W
+
+Este projeto foi otimizado para rodar em **Raspberry Pi Zero 2 W** com apenas 512MB de RAM!
+
+### Instalação Rápida no Pi
+
+```bash
+# Baixar e executar script de instalação
+curl -fsSL https://raw.githubusercontent.com/carloterzaghi/Whats-ImpostorGame/main/install_pi.sh -o install_pi.sh
+chmod +x install_pi.sh
+./install_pi.sh
+```
+
+O script irá:
+- ✅ Instalar Python e dependências
+- ✅ Criar ambiente virtual otimizado
+- ✅ Configurar serviço systemd para autostart
+- ✅ Aplicar otimizações de memória
+
+### Recursos
+
+- **Autostart**: Inicia automaticamente ao ligar o Pi
+- **Otimizações**: Gerenciamento agressivo de memória, lazy loading
+- **Monitoramento**: Logs via journalctl
+- **Twilio recomendado**: Mais eficiente que PyWhatKit no Pi
+
+### Documentação Completa
+
+Consulte [RASPBERRY_PI_SETUP.md](RASPBERRY_PI_SETUP.md) para:
+- Guia passo a passo de instalação
+- Configuração do serviço systemd
+- Monitoramento e troubleshooting
+- Otimizações de performance
+- Comandos úteis
+
 ## Estrutura do projeto
 
 ```
 Whats-ImpostorGame/
-├── main.py              # Script principal com menu interativo
-├── game.py              # Lógica do jogo (sortear, atribuir papéis)
-├── whatsapp_sender.py   # Envio de mensagens (PyWhatKit + Twilio)
-├── config.py            # Configurações, palavras e mensagens
-├── api_config.py        # Carrega credenciais do .env
-├── .env                 # Credenciais Twilio (NÃO commitar!)
-├── .env.example         # Exemplo de configuração
-├── requirements.txt     # Dependências do Python
-└── README.md            # Este arquivo
+├── main.py                  # Script principal com menu interativo
+├── game.py                  # Lógica do jogo (sortear, atribuir papéis)
+├── whatsapp_sender.py       # Envio de mensagens (PyWhatKit + Twilio)
+├── config.py                # Configurações, palavras e mensagens
+├── api_config.py            # Carrega credenciais do .env
+├── pi_optimizations.py      # Otimizações para Raspberry Pi
+├── .env                     # Credenciais Twilio (NÃO commitar!)
+├── .env.example             # Exemplo de configuração
+├── requirements.txt         # Dependências do Python
+├── install_pi.sh            # Script de instalação para Raspberry Pi
+├── RASPBERRY_PI_SETUP.md    # Documentação completa do Pi
+├── TWILIO_SETUP.md          # Guia de configuração do Twilio
+└── README.md                # Este arquivo
 ```
 
 ## Personalização
