@@ -55,11 +55,10 @@ def menu_principal():
     print("  1. Adicionar jogador")
     print("  2. Remover jogador")
     print("  3. Ver jogadores cadastrados")
-    print("  4. Escolher categoria de perguntas")
-    print("  5. 🎲 INICIAR JOGO (min. 3 jogadores)")
-    print("  6. Coletar respostas e mostrar resultado")
-    print("  7. Teste: modo prévia (sem envio)")
-    print("  8. Escolher método de envio")
+    print("  4. 🎲 INICIAR JOGO (min. 3 jogadores)")
+    print("  5. Coletar respostas e mostrar resultado")
+    print("  6. Teste: modo prévia (sem envio)")
+    print("  7. Escolher método de envio")
     print("  0. Sair")
     print("-" * 50)
     print(f"  📡 Método atual: {metodo_atual.upper()}")
@@ -164,6 +163,9 @@ def iniciar_jogo(jogo: JogoImpostor):
     print("-" * 35)
 
     with GerenciadorMemoria("Sorteio e envio"):
+        # Escolher categoria aleatória
+        jogo.escolher_categoria_aleatoria()
+        
         if not jogo.sortear():
             return
 
@@ -354,14 +356,12 @@ def main():
         elif opcao == "3":
             ver_jogadores(jogo)
         elif opcao == "4":
-            escolher_categoria(jogo)
-        elif opcao == "5":
             iniciar_jogo(jogo)
-        elif opcao == "6":
+        elif opcao == "5":
             coletar_respostas_e_resultado(jogo)
-        elif opcao == "7":
+        elif opcao == "6":
             modo_teste(jogo)
-        elif opcao == "8":
+        elif opcao == "7":
             escolher_metodo_envio()
         elif opcao == "0":
             print("\n👋 Até a próxima! Bom jogo!\n")

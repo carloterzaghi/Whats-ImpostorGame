@@ -70,6 +70,13 @@ class JogoInfiltrado:
             return True
         return False
 
+    def escolher_categoria_aleatoria(self) -> str:
+        """Escolhe uma categoria aleatória e retorna o nome."""
+        categorias = list(CATEGORIAS_PERGUNTAS.keys())
+        self.categoria = random.choice(categorias)
+        print(f"🎲 Categoria sorteada: {self.categoria}")
+        return self.categoria
+
     # ---- Sortear e preparar -------------------------------------------------
 
     def sortear(self, modo_teste: bool = False) -> bool:
