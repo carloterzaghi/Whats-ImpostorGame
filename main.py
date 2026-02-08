@@ -253,18 +253,19 @@ def coletar_respostas_e_resultado(jogo: JogoImpostor):
 
 
 def modo_teste(jogo: JogoImpostor):
-    """Sorteia, mostra as mensagens e oferece opção de enviar."""
-    import api_config
-    
+    """Mostra prévia das perguntas sem enviar."""
     print("\n🧪 MODO TESTE (pré-visualização)")
     print("-" * 35)
+
+    # Escolher categoria aleatória
+    jogo.escolher_categoria_aleatoria()
 
     if not jogo.sortear(modo_teste=True):
         return
 
     print(jogo.resumo_partida())
 
-    print("\n📨 MENSAGENS QUE SERÃO ENVIADAS:")
+    print("\n📨 PERGUNTAS QUE SERÃO ENVIADAS:")
     print("=" * 50)
     for j in jogo.jogadores:
         print(f"\n📱 Para: {j.nome} ({j.telefone})")
@@ -272,25 +273,7 @@ def modo_teste(jogo: JogoImpostor):
         print(j.mensagem)
         print("-" * 40)
     print("=" * 50)
-
-    # Oferecer opção de enviar após visualizar
-    print(f"\nDeseja enviar essas mensagens agora? (Método: {api_config.METODO_ENVIO.upper()})")
-    print("  1. Sim, enviar para todos!")
-    print("  2. Não, voltar ao menu")
-    resp = input("Escolha: ").strip()
-
-    if resp == "1":
-        if api_config.METODO_ENVIO == "pywhatkit":
-            print("\n⚠️  Certifique-se de que está logado em web.whatsapp.com")
-        conf = input("Confirma o envio? (s/n): ").strip().lower()
-        if conf == "s":
-            print("\n🚀 Iniciando envio de mensagens...\n")
-            resultado = enviar_para_jogadores(jogo.jogadores)
-            exibir_resultado_envio(resultado)
-        else:
-            print("   ❎ Envio cancelado.")
-    else:
-        print("   ↩️  Voltando ao menu.")
+    print("\n↩️  Voltando ao menu...")
 
 
 def escolher_metodo_envio():
