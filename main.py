@@ -56,9 +56,10 @@ def menu_principal():
     print("  2. Remover jogador")
     print("  3. Ver jogadores cadastrados")
     print("  4. 🎲 INICIAR JOGO (min. 3 jogadores)")
-    print("  5. Coletar respostas e mostrar resultado")
+    print("  5. 📝 Coletar e enviar respostas")
     print("  6. 🧪 Teste de envio (com jogadores salvos)")
     print("  7. Escolher método de envio")
+    print("  8. 🎯 Enviar resultado final (revelar infiltrado)")
     print("  0. Sair")
     print("-" * 50)
     print(f"  📡 Método atual: {metodo_atual.upper()}")
@@ -196,81 +197,91 @@ def iniciar_jogo(jogo: JogoImpostor):
         print("📝 Quando todos responderem, use a opção 5 para coletar respostas.")
 
 
-def coletar_respostas_e_resultado(jogo: JogoImpostor):
-    """Coleta respostas dos jogadores e mostra o resultado."""
+def coletar_respostas_e_enviar(jogo: JogoImpostor):
+    """Coleta respostas dos jogadores e envia automaticamente para todos."""
     import api_config
     
     if not jogo.infiltrado_obj:
         print("\n⚠️  Inicie o jogo primeiro (opção 4)!")
         return
 
-    print("\n📝 COLETAR RESPOSTAS E RESULTADO")
+    print("\n📝 COLETAR E ENVIAR RESPOSTAS")
     print("-" * 50)
     
     with GerenciadorMemoria("Coleta de respostas"):
         # Coletar respostas
         jogo.coletar_respostas()
         
-        # ETAPA 1: Mostrar respostas SEM revelar infiltrado
+        # Gerar resultado parcial (SEM revelar infiltrado)
         resultado_parcial = jogo.gerar_resultado_parcial()
         
         print("\n" + "=" * 50)
-        print("📊 RESPOSTAS (SEM REVELAR INFILTRADO):")
+        print("📊 RESPOSTAS COLETADAS:")
         print("=" * 50)
         print(resultado_parcial)
         print("=" * 50)
         
-        # Perguntar o que fazer
-        print("\n📤 O que deseja fazer?")
-        print("  1. Enviar respostas (SEM revelar infiltrado)")
-        print("  2. Mostrar resumo completo (revelando infiltrado)")
-        print("  0. Cancelar")
+        # Confirmação de envio
+        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+        print("   As respostas + pergunta serão enviadas para TODOS os jogadores.")
+        print("   O infiltrado NÃO será revelado ainda.")
         
-        escolha = input("\nEscolha: ").strip()
+        conf = input("\nDeseja enviar as respostas agora? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
         
-        if escolha == "1":
-            # Enviar resultado parcial
-            print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
-            conf = input("\nConfirma envio das respostas? (s/n): ").strip().lower()
-            if conf != "s":
-                print("   ❎ Envio cancelado.")
-                return
-            
-            print("\n🚀 Enviando respostas para todos...\n")
-            for j in jogo.jogadores:
-                j.mensagem = resultado_parcial
-            
-            resultado = enviar_para_jogadores(jogo.jogadores)
-            exibir_resultado_envio(resultado)
-            print("\n✅ Respostas enviadas! Use a opção 5 novamente para revelar o infiltrado.")
-            
-        elif escolha == "2":
-            # ETAPA 2: Mostrar resultado completo
-            resultado_completo = jogo.gerar_resultado_completo()
-            
-            print("\n" + "=" * 50)
-            print("🎯 RESULTADO COMPLETO (COM INFILTRADO):")
-            print("=" * 50)
-            print(resultado_completo)
-            print("=" * 50)
-            
-            # Perguntar se quer enviar
-            print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
-            conf = input("\nDeseja enviar o resultado completo para todos? (s/n): ").strip().lower()
-            if conf != "s":
-                print("   ❎ Envio cancelado.")
-                return
-            
-            print("\n🚀 Enviando resultado completo para todos...\n")
-            for j in jogo.jogadores:
-                j.mensagem = resultado_completo
-            
-            resultado = enviar_para_jogadores(jogo.jogadores)
-            exibir_resultado_envio(resultado)
-            print("\n🎉 Jogo finalizado!")
-            
-        else:
-            print("\n❎ Operação cancelada.")
+        print("\n🚀 Enviando respostas para todos...\n")
+        for j in jogo.jogadores:
+            j.mensagem = resultado_parcial
+        
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
+        
+        print("\n✅ Respostas enviadas para todos os jogadores!")
+        print("📊 Todos podem discutir quem é o infiltrado.")
+        print("🎯 Use a opção 8 quando quiser revelar o infiltrado.")
+
+
+def enviar_resultado_final(jogo: JogoImpostor):
+    """Envia o resultado final revelando quem é o infiltrado."""
+    import api_config
+    
+    if not jogo.infiltrado_obj:
+        print("\n⚠️  Inicie o jogo primeiro (opção 4)!")
+        return
+
+    print("\n🎯 ENVIAR RESULTADO FINAL")
+    print("-" * 50)
+    
+    with GerenciadorMemoria("Resultado final"):
+        # Gerar resultado completo
+        resultado_completo = jogo.gerar_resultado_completo()
+        
+        print("\n" + "=" * 50)
+        print("🎯 RESULTADO FINAL (COM INFILTRADO):")
+        print("=" * 50)
+        print(resultado_completo)
+        print("=" * 50)
+        
+        # Confirmação de envio
+        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+        print("   O resultado completo com a revelação do infiltrado")
+        print("   será enviado para TODOS os jogadores.")
+        
+        conf = input("\nDeseja enviar o resultado final agora? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
+        
+        print("\n🚀 Enviando resultado final para todos...\n")
+        for j in jogo.jogadores:
+            j.mensagem = resultado_completo
+        
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
+        
+        print("\n🎉 Jogo finalizado! Infiltrado revelado para todos!")
 
 
 def modo_teste(jogo: JogoImpostor):
@@ -384,11 +395,13 @@ def main():
         elif opcao == "4":
             iniciar_jogo(jogo)
         elif opcao == "5":
-            coletar_respostas_e_resultado(jogo)
+            coletar_respostas_e_enviar(jogo)
         elif opcao == "6":
             modo_teste(jogo)
         elif opcao == "7":
             escolher_metodo_envio()
+        elif opcao == "8":
+            enviar_resultado_final(jogo)
         elif opcao == "0":
             print("\n👋 Até a próxima! Bom jogo!\n")
             if RASPBERRY_PI_MODE:
