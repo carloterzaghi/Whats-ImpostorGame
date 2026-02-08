@@ -63,7 +63,9 @@ def menu_principal():
     print("-" * 50)
     print(f"  📡 Método atual: {metodo_atual.upper()}")
     print("-" * 50)
-    return input("Escolha uma opção: ").strip()
+    result = input("Escolha uma opção: ").strip()
+    os.system("cls" if os.name == "nt" else "clear")
+    return result
 
 
 def adicionar_jogador(jogo: JogoImpostor):
@@ -88,7 +90,8 @@ def adicionar_jogador(jogo: JogoImpostor):
 
         jogador = jogo.adicionar_jogador(nome, telefone)
         print(f"  ✅ {jogador.nome} ({jogador.telefone}) adicionado!\n")
-
+        
+    os.system("cls" if os.name == "nt" else "clear")
     print(f"\n📊 Total de jogadores: {len(jogo.jogadores)}")
     
     # Limpar memória no Pi
