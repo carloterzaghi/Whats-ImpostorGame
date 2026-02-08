@@ -57,7 +57,7 @@ def menu_principal():
     print("  3. Ver jogadores cadastrados")
     print("  4. 🎲 INICIAR JOGO (min. 3 jogadores)")
     print("  5. Coletar respostas e mostrar resultado")
-    print("  6. Teste: modo prévia (sem envio)")
+    print("  6. 🧪 Teste de envio (com jogadores salvos)")
     print("  7. Escolher método de envio")
     print("  0. Sair")
     print("-" * 50)
@@ -193,7 +193,7 @@ def iniciar_jogo(jogo: JogoImpostor):
         exibir_resultado_envio(resultado)
         
         print("\n✅ Perguntas enviadas!")
-        print("📝 Quando todos responderem, use a opção 6 para coletar respostas.")
+        print("📝 Quando todos responderem, use a opção 5 para coletar respostas.")
 
 
 def coletar_respostas_e_resultado(jogo: JogoImpostor):
@@ -274,27 +274,49 @@ def coletar_respostas_e_resultado(jogo: JogoImpostor):
 
 
 def modo_teste(jogo: JogoImpostor):
-    """Mostra prévia das perguntas sem enviar."""
-    print("\n🧪 MODO TESTE (pré-visualização)")
+    """Teste de envio para os números dos jogadores salvos."""
+    import api_config
+    
+    if len(jogo.jogadores) < 3:
+        print("\n⚠️  É necessário pelo menos 3 jogadores!")
+        return
+    
+    print("\n🧪 MODO TESTE - ENVIO REAL")
     print("-" * 35)
 
-    # Escolher categoria aleatória
-    jogo.escolher_categoria_aleatoria()
+    with GerenciadorMemoria("Teste de envio"):
+        # Escolher categoria aleatória
+        jogo.escolher_categoria_aleatoria()
 
-    if not jogo.sortear(modo_teste=True):
-        return
+        if not jogo.sortear(modo_teste=True):
+            return
 
-    print(jogo.resumo_partida())
+        print(jogo.resumo_partida())
 
-    print("\n📨 PERGUNTAS QUE SERÃO ENVIADAS:")
-    print("=" * 50)
-    for j in jogo.jogadores:
-        print(f"\n📱 Para: {j.nome} ({j.telefone})")
-        print("-" * 40)
-        print(j.mensagem)
-        print("-" * 40)
-    print("=" * 50)
-    print("\n↩️  Voltando ao menu...")
+        print("\n📨 PERGUNTAS QUE SERÃO ENVIADAS:")
+        print("=" * 50)
+        for j in jogo.jogadores:
+            print(f"\n📱 Para: {j.nome} ({j.telefone})")
+            print("-" * 40)
+            print(j.mensagem)
+            print("-" * 40)
+        print("=" * 50)
+        
+        # Confirmação de envio
+        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+        print("   As perguntas serão ENVIADAS para os números cadastrados!")
+        
+        conf = input("\n   Deseja ENVIAR as perguntas agora? (s/n): ").strip().lower()
+        if conf != "s":
+            print("   ❎ Envio cancelado.")
+            return
+
+        print("\n🚀 Enviando perguntas de teste...\n")
+        resultado = enviar_para_jogadores(jogo.jogadores)
+        exibir_resultado_envio(resultado)
+        
+        print("\n✅ Teste concluído! Perguntas enviadas.")
+        print("📝 Use a opção 5 para coletar respostas quando todos responderem.")
 
 
 def escolher_metodo_envio():
