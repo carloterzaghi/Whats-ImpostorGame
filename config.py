@@ -45,60 +45,6 @@ CATEGORIAS_PERGUNTAS = {
     ],
 }
 
-# LEGACY: Mantido para compatibilidade (pode remover depois)
-CATEGORIAS_PALAVRAS = {
-    "Animais": [
-        ("Cachorro", "Gato"),
-        ("Leão", "Tigre"),
-        ("Águia", "Falcão"),
-        ("Tubarão", "Baleia"),
-        ("Cobra", "Lagarto"),
-        ("Cavalo", "Burro"),
-        ("Elefante", "Rinoceronte"),
-        ("Macaco", "Gorila"),
-    ],
-    "Comidas": [
-        ("Pizza", "Esfiha"),
-        ("Hambúrguer", "Sanduíche"),
-        ("Sushi", "Sashimi"),
-        ("Bolo", "Torta"),
-        ("Sorvete", "Açaí"),
-        ("Churrasco", "Parrilla"),
-        ("Lasanha", "Macarrão"),
-        ("Coxinha", "Risole"),
-    ],
-    "Profissões": [
-        ("Médico", "Enfermeiro"),
-        ("Advogado", "Juiz"),
-        ("Professor", "Tutor"),
-        ("Bombeiro", "Policial"),
-        ("Engenheiro", "Arquiteto"),
-        ("Piloto", "Comissário"),
-        ("Cozinheiro", "Padeiro"),
-        ("Dentista", "Ortodontista"),
-    ],
-    "Lugares": [
-        ("Praia", "Piscina"),
-        ("Shopping", "Mercado"),
-        ("Cinema", "Teatro"),
-        ("Hospital", "Clínica"),
-        ("Escola", "Faculdade"),
-        ("Parque", "Praça"),
-        ("Aeroporto", "Rodoviária"),
-        ("Igreja", "Templo"),
-    ],
-    "Esportes": [
-        ("Futebol", "Futsal"),
-        ("Basquete", "Vôlei"),
-        ("Natação", "Mergulho"),
-        ("Tênis", "Badminton"),
-        ("Boxe", "MMA"),
-        ("Skate", "Patins"),
-        ("Surfe", "Bodyboard"),
-        ("Corrida", "Ciclismo"),
-    ],
-}
-
 # ============================================================
 #  MENSAGENS DO JOGO
 # ============================================================
@@ -131,8 +77,5 @@ MSG_RESULTADO = (
     "🎯 *RESULTADO DO JOGO* 🎯\n\n"
     "📊 *RESPOSTAS DE TODOS:*\n"
     "{respostas}\n\n"
-    "❓ *PERGUNTA NORMAL:*\n{pergunta}\n\n"
-    "🔴 *INSTRUÇÃO DO INFILTRADO:*\n{instrucao}\n\n"
-    "👤 *O INFILTRADO ERA:* {infiltrado}\n\n"
-    "Conseguiram descobrir? 🤔"
+    "❓ *PERGUNTA:*\n{pergunta}\n\n"
 )

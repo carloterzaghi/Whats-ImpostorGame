@@ -139,8 +139,23 @@ class JogoInfiltrado:
         print("\n✅ Todas as respostas coletadas!")
         return True
 
-    def gerar_resultado(self) -> str:
-        """Gera a mensagem de resultado final para enviar a todos."""
+    def gerar_resultado_parcial(self) -> str:
+        """Gera mensagem com respostas e pergunta (SEM revelar infiltrado)."""
+        respostas_texto = ""
+        for j in self.jogadores:
+            respostas_texto += f"👤 *{j.nome}:* {j.resposta}\n"
+        
+        resultado = (
+            "🎯 *RESPOSTAS DO JOGO* 🎯\n\n"
+            "📊 *TODAS AS RESPOSTAS:*\n"
+            f"{respostas_texto}\n"
+            f"❓ *A PERGUNTA ERA:*\n{self.pergunta_normal}\n\n"
+            "🤔 Quem será o infiltrado?"
+        )
+        return resultado
+
+    def gerar_resultado_completo(self) -> str:
+        """Gera a mensagem de resultado final com revelação do infiltrado."""
         respostas_texto = ""
         for j in self.jogadores:
             emoji = "🔴" if j.infiltrado else "👤"
@@ -153,6 +168,10 @@ class JogoInfiltrado:
             infiltrado=self.infiltrado_obj.nome if self.infiltrado_obj else "???"
         )
         return resultado
+
+    def gerar_resultado(self) -> str:
+        """Alias para compatibilidade - usa resultado completo."""
+        return self.gerar_resultado_completo()
 
     def resumo_partida(self) -> str:
         """Retorna um resumo da partida (para o organizador)."""

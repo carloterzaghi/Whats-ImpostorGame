@@ -201,7 +201,7 @@ def coletar_respostas_e_resultado(jogo: JogoImpostor):
     import api_config
     
     if not jogo.infiltrado_obj:
-        print("\n⚠️  Inicie o jogo primeiro (opção 5)!")
+        print("\n⚠️  Inicie o jogo primeiro (opção 4)!")
         return
 
     print("\n📝 COLETAR RESPOSTAS E RESULTADO")
@@ -211,48 +211,66 @@ def coletar_respostas_e_resultado(jogo: JogoImpostor):
         # Coletar respostas
         jogo.coletar_respostas()
         
-        # Gerar resultado
-        resultado_msg = jogo.gerar_resultado()
+        # ETAPA 1: Mostrar respostas SEM revelar infiltrado
+        resultado_parcial = jogo.gerar_resultado_parcial()
         
         print("\n" + "=" * 50)
-        print("RESULTADO QUE SERÁ ENVIADO PARA TODOS:")
+        print("📊 RESPOSTAS (SEM REVELAR INFILTRADO):")
         print("=" * 50)
-        print(resultado_msg)
+        print(resultado_parcial)
         print("=" * 50)
         
-        # Confirmar envio do resultado
-        conf = input("\nDeseja enviar o resultado para todos? (s/n): ").strip().lower()
-        if conf != "s":
-            print("   ❎ Envio cancelado.")
-            return
+        # Perguntar o que fazer
+        print("\n📤 O que deseja fazer?")
+        print("  1. Enviar respostas (SEM revelar infiltrado)")
+        print("  2. Mostrar resumo completo (revelando infiltrado)")
+        print("  0. Cancelar")
         
-        print("\n🚀 Enviando resultado para todos...\n")
+        escolha = input("\nEscolha: ").strip()
         
-        # Enviar resultado para todos os jogadores
-        for j in jogo.jogadores:
-            j.mensagem = resultado_msg
-        
-        resultado = enviar_para_jogadores(jogo.jogadores)
-        exibir_resultado_envio(resultado)
-        
-        print("\n🎉 Jogo finalizado!")
-
-        # Confirmação
-        print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
-        if api_config.METODO_ENVIO == "pywhatkit":
-            print("   O WhatsApp Web será aberto no navegador.")
-            print("   Certifique-se de que você está logado em web.whatsapp.com")
-        elif api_config.METODO_ENVIO == "twilio":
-            print("   As mensagens serão enviadas via Twilio API.")
-        
-        conf = input("\n   Deseja enviar as mensagens agora? (s/n): ").strip().lower()
-        if conf != "s":
-            print("   ❎ Envio cancelado.")
-            return
-
-        print("\n🚀 Iniciando envio de mensagens...\n")
-        resultado = enviar_para_jogadores(jogo.jogadores)
-        exibir_resultado_envio(resultado)
+        if escolha == "1":
+            # Enviar resultado parcial
+            print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+            conf = input("\nConfirma envio das respostas? (s/n): ").strip().lower()
+            if conf != "s":
+                print("   ❎ Envio cancelado.")
+                return
+            
+            print("\n🚀 Enviando respostas para todos...\n")
+            for j in jogo.jogadores:
+                j.mensagem = resultado_parcial
+            
+            resultado = enviar_para_jogadores(jogo.jogadores)
+            exibir_resultado_envio(resultado)
+            print("\n✅ Respostas enviadas! Use a opção 5 novamente para revelar o infiltrado.")
+            
+        elif escolha == "2":
+            # ETAPA 2: Mostrar resultado completo
+            resultado_completo = jogo.gerar_resultado_completo()
+            
+            print("\n" + "=" * 50)
+            print("🎯 RESULTADO COMPLETO (COM INFILTRADO):")
+            print("=" * 50)
+            print(resultado_completo)
+            print("=" * 50)
+            
+            # Perguntar se quer enviar
+            print(f"\n⚠️  ATENÇÃO: Método de envio = {api_config.METODO_ENVIO.upper()}")
+            conf = input("\nDeseja enviar o resultado completo para todos? (s/n): ").strip().lower()
+            if conf != "s":
+                print("   ❎ Envio cancelado.")
+                return
+            
+            print("\n🚀 Enviando resultado completo para todos...\n")
+            for j in jogo.jogadores:
+                j.mensagem = resultado_completo
+            
+            resultado = enviar_para_jogadores(jogo.jogadores)
+            exibir_resultado_envio(resultado)
+            print("\n🎉 Jogo finalizado!")
+            
+        else:
+            print("\n❎ Operação cancelada.")
 
 
 def modo_teste(jogo: JogoImpostor):
